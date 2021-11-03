@@ -15,7 +15,7 @@ from telebot import types
 
 from code.user import User
 
-api_token = "2093237482:AAFzoJQsNoaVVVYpAIJpOpR_YdOR72T8K9Q"
+api_token = os.environ['API_TOKEN']
 commands = {
     'menu': 'Display this menu',
     'add': 'Record/Add a new spending',
