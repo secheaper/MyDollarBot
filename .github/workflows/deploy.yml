@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - main
+      - moksh_28_nov_test_cases
 #   pull_request:
 #     branches:
 #       - main
