@@ -2,3 +2,4 @@ pyTelegramBotAPI==4.1.0
 pandas
 matplotlib==3.4.3
 tabulate
+forex-python

@@ -20,12 +20,13 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
+from forex_python.converter import CurrencyRates
 
-sys.path.append("C:/NCSU/Sem 1/SE/Project 3/slashbot/")
+# sys.path.append("/Users/jayesh/Documents/GitHub/slashbot/src")
 try:
-    from src.user import User
+    from user import User
 except:
-   from user import User
+    from user import User
 
 api_token = os.environ["API_TOKEN"]
 commands = {
@@ -40,14 +41,15 @@ commands = {
     "categoryAdd": "Add a new custom category",
     "categoryList": "List all categories",
     "categoryDelete": "Delete a category",
-    "download":"Download your history",
+    "download": "Download your history",
     "displayDifferentCurrency": "Display the sum of expenditures for the current day/month in another currency",
-    "sendEmail":"Send an email with an attachment showing your history"
+    "sendEmail": "Send an email with an attachment showing your history"
 }
 
-DOLLARS_TO_RUPEES = 75.01
-DOLLARS_TO_EUROS = 0.88
-DOLLARS_TO_SWISS_FRANC = 0.92
+c = CurrencyRates()
+DOLLARS_TO_RUPEES = c.get_rate('USD', 'INR')
+DOLLARS_TO_EUROS = c.get_rate('USD', 'EUR')
+DOLLARS_TO_SWISS_FRANC = c.get_rate('USD', 'CHF')
 
 bot = telebot.TeleBot(api_token)
 telebot.logger.setLevel(logging.INFO)
@@ -75,9 +77,9 @@ def start_and_menu_command(m):
         "commands, please enter a command of your choice so that I can assist you further: \n\n "
     )
     for (
-        c
+            c
     ) in (
-        commands
+            commands
     ):  # generate help text out of the commands dictionary defined at the top
         text_intro += "/" + c + ": "
         text_intro += commands[c] + "\n\n"
@@ -250,9 +252,9 @@ def post_category_selection(message, date_to_add):
         bot.reply_to(message, "Oh no! " + str(ex))
         display_text = ""
         for (
-            c
+                c
         ) in (
-            commands
+                commands
         ):  # generate help text out of the commands dictionary defined at the top
             display_text += "/" + c + ": "
             display_text += commands[c] + "\n"
@@ -345,7 +347,7 @@ def show_history(message):
                     table.append([date, category, "$ " + value])
             if count == 0:
                 raise Exception("Sorry! No spending records found!")
-            spend_total_str="<pre>"+ tabulate(table, headers='firstrow')+"</pre>"
+            spend_total_str = "<pre>" + tabulate(table, headers='firstrow') + "</pre>"
             bot.send_message(chat_id, spend_total_str, parse_mode="HTML")
 
     except Exception as ex:
@@ -376,7 +378,7 @@ def download_history(message):
                     count = count + 1
                     date = transaction["Date"].strftime("%m/%d/%y")
                     value = format(transaction["Value"], ".2f")
-                    table.append([date, category, "$"+value])
+                    table.append([date, category, "$" + value])
             if count == 0:
                 raise Exception("Sorry! No spending records found!")
 
@@ -393,7 +395,8 @@ def download_history(message):
     except Exception as ex:
         logger.error(str(ex), exc_info=True)
         bot.reply_to(message, str(ex))
-    
+
+
 @bot.message_handler(commands=["sendEmail"])
 def send_email(message):
     """
@@ -417,7 +420,7 @@ def send_email(message):
                     count = count + 1
                     date = transaction["Date"].strftime("%m/%d/%y")
                     value = format(transaction["Value"], ".2f")
-                    table.append([date, category, "$"+value])
+                    table.append([date, category, "$" + value])
             if count == 0:
                 raise Exception("Sorry! No spending records found!")
 
@@ -441,7 +444,7 @@ def send_email(message):
 def acceptEmailId(message):
     email = message.text
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-    if(re.fullmatch(regex, email)):
+    if (re.fullmatch(regex, email)):
         try:
             chat_id = str(message.chat.id)
             count = 0
@@ -456,11 +459,11 @@ def acceptEmailId(message):
                         count = count + 1
                         date = transaction["Date"].strftime("%m/%d/%y")
                         value = format(transaction["Value"], ".2f")
-                        table.append([date, category, "$"+value])
+                        table.append([date, category, "$" + value])
                 if count == 0:
                     raise Exception("Sorry! No spending records found!")
 
-                with open('history.csv', 'w', newline = '') as file:
+                with open('history.csv', 'w', newline='') as file:
                     writer = csv.writer(file)
                     writer.writerows(table)
                 # s = io.StringIO()
@@ -482,30 +485,29 @@ def acceptEmailId(message):
                 sender_address = 'secheaper@gmail.com'
                 sender_pass = 'csc510se'
                 receiver_address = email
-                #Setup the MIME
+                # Setup the MIME
                 message = MIMEMultipart()
                 message['From'] = sender_address
                 message['To'] = receiver_address
                 message['Subject'] = 'Spending History document'
-                #The subject line
-                #The body and the attachments for the mail
+                # The subject line
+                # The body and the attachments for the mail
                 message.attach(MIMEText(mail_content, 'plain'))
                 attach_file_name = "history.csv"
                 attach_file = open(attach_file_name, 'rb')
                 payload = MIMEBase('application', 'octate-stream')
                 payload.set_payload((attach_file).read())
-                encoders.encode_base64(payload) #encode the attachment
-                #add payload header with filename
+                encoders.encode_base64(payload)  # encode the attachment
+                # add payload header with filename
                 payload.add_header('Content-Decomposition', 'attachment', filename=attach_file_name)
                 message.attach(payload)
-                #Create SMTP session for sending the mail
-                session = smtplib.SMTP('smtp.gmail.com', 587) #use gmail with port
-                session.starttls() #enable security
-                session.login(sender_address, sender_pass) #login with mail_id and password
+                # Create SMTP session for sending the mail
+                session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
+                session.starttls()  # enable security
+                session.login(sender_address, sender_pass)  # login with mail_id and password
                 text = message.as_string()
                 session.sendmail(sender_address, receiver_address, text)
                 session.quit()
-
                 # bot.send_message(message.chat.id, 'Mail Sent')
 
 
@@ -514,7 +516,6 @@ def acceptEmailId(message):
             bot.reply_to(message, str(ex))
     else:
         bot.send_message(message.chat.id, 'incorrect email')
-        
 
 
 @bot.message_handler(commands=["display"])
@@ -1034,8 +1035,8 @@ def command_delete(message):
     chat_id = str(message.chat.id)
     try:
         if (
-            chat_id in user_list
-            and user_list[chat_id].get_number_of_transactions() != 0
+                chat_id in user_list
+                and user_list[chat_id].get_number_of_transactions() != 0
         ):
             curr_day = datetime.now()
             prompt = "Enter the day, month, or All\n"
@@ -1181,7 +1182,7 @@ def get_chart(message):
     :return: None
     """
     # Original Code
-    
+
     # chat_id = str(message.chat.id)
     # chart_file = user_list[chat_id].create_chart(chat_id)
     # with open(chart_file, "rb") as f:
@@ -1195,7 +1196,6 @@ def get_chart(message):
         with open(cf, "rb") as f:
             bot.send_photo(chat_id, f)
             # bot.send_photo(chat_id, cf)
-
 
 
 def create_header(user):
@@ -1239,12 +1239,12 @@ def handler_callback(callback, user):
     """
 
     if callback == "prev" and user.curr_date.replace(day=1) >= user.min_date.replace(
-        day=1
+            day=1
     ):
         user.curr_date = user.curr_date.replace(month=user.curr_date.month - 1)
         return None
     if callback == "next" and user.curr_date.replace(day=1) <= user.max_date.replace(
-        day=1
+            day=1
     ):
         user.curr_date = user.curr_date.replace(month=user.curr_date.month + 1)
         return None
@@ -1310,6 +1310,7 @@ def command_display_currency(message):
             print("Exception occurred : ")
             logger.error(str(ex), exc_info=True)
             bot.reply_to(message, "Oops! - \nError : " + str(ex))
+
 
 def display_total_currency(message):
     """
@@ -1382,11 +1383,11 @@ def display_total_currency(message):
             total_spendings += query_result
             total_spendings += "Total Value {:.2f}\n".format(total_value)
             total_spendings += "Budget for the month {}".format(str(budget_value))
-            global completeSpendings # pylint: disable=global-statement
+            global completeSpendings  # pylint: disable=global-statement
             completeSpendings = total_value
             choice = bot.reply_to(
-                        message, "Which currency to you want to covert to?", reply_markup=markup
-                    )
+                message, "Which currency to you want to covert to?", reply_markup=markup
+            )
             bot.register_next_step_handler(choice, display_total_currency2)
             # bot.send_message(chat_id, total_spendings)
 
@@ -1402,24 +1403,24 @@ def display_total_currency2(message):
         selection = message.text
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
         markup.row_width = 2
-        
+
         if selection == "INR":
-            completeExpenses = completeSpendings * DOLLARS_TO_RUPEES
+            completeExpenses = round(completeSpendings * DOLLARS_TO_RUPEES,2)
             completeExpensesMessage = (
-            "The total expenses in INR is Rs. " + str(completeExpenses)
-        )
+                    "The total expenses in INR is Rs. " + str(completeExpenses)
+            )
             bot.reply_to(message, completeExpensesMessage)
         if selection == "EUR":
-            completeExpenses = completeSpendings * DOLLARS_TO_EUROS
+            completeExpenses = round(completeSpendings * DOLLARS_TO_EUROS,2)
             completeExpensesMessage = (
-            "The total expenses in EUR is " + str(completeExpenses) + " EUR"
-        )
+                    "The total expenses in EUR is " + str(completeExpenses) + " EUR"
+            )
             bot.reply_to(message, completeExpensesMessage)
         if selection == "CHF":
-            completeExpenses = completeSpendings * DOLLARS_TO_EUROS
+            completeExpenses = round(completeSpendings * DOLLARS_TO_SWISS_FRANC,2)
             completeExpensesMessage = (
-            "The total expenses in Swiss Franc is " + str(completeExpenses) + " CHF"
-        )
+                    "The total expenses in Swiss Franc is " + str(completeExpenses) + " CHF"
+            )
             bot.reply_to(message, completeExpensesMessage)
 
 
@@ -1427,8 +1428,6 @@ def display_total_currency2(message):
         print("Exception occurred : ")
         logger.error(str(ex), exc_info=True)
         bot.reply_to(message, "Processing Failed - Error: " + str(ex))
-
-
 
 
 if __name__ == "__main__":
