@@ -11,6 +11,8 @@ import time
 import csv
 import io
 from datetime import datetime
+from email.mime.application import MIMEApplication
+
 from tabulate import tabulate
 import sys
 import telebot
@@ -482,8 +484,8 @@ def acceptEmailId(message):
                 Thank you!
                 '''
                 #The mail addresses and password
-                sender_address = 'secheaper@gmail.com'
-                sender_pass = 'csc510se'
+                sender_address = 'jayeshthakur170598@gmail.com'
+                sender_pass = 'owiceyjpkqxjbjuw'
                 receiver_address = email
                 # Setup the MIME
                 message = MIMEMultipart()
@@ -495,8 +497,8 @@ def acceptEmailId(message):
                 message.attach(MIMEText(mail_content, 'plain'))
                 attach_file_name = "history.csv"
                 attach_file = open(attach_file_name, 'rb')
-                payload = MIMEBase('application', 'octate-stream')
-                payload.set_payload((attach_file).read())
+                payload = MIMEApplication(attach_file.read(), Name=attach_file_name)
+                # payload.set_payload((attach_file).read())
                 encoders.encode_base64(payload)  # encode the attachment
                 # add payload header with filename
                 payload.add_header('Content-Decomposition', 'attachment', filename=attach_file_name)
