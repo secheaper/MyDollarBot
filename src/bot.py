@@ -484,8 +484,8 @@ def acceptEmailId(message):
                 Thank you!
                 '''
                 #The mail addresses and password
-                sender_address = 'jayeshthakur170598@gmail.com'
-                sender_pass = 'owiceyjpkqxjbjuw'
+                sender_address = 'bucksbotncsu@gmail.com'
+                sender_pass = 'eevyhyshokfrrvkc'
                 receiver_address = email
                 # Setup the MIME
                 message = MIMEMultipart()
