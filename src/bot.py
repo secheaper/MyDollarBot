@@ -346,10 +346,10 @@ def show_history(message):
                     count = count + 1
                     date = transaction["Date"].strftime("%m/%d/%y")
                     value = format(transaction["Value"], ".2f")
-                    table.append([date, category, "$ " + value])
+                    table.append([category, date, "$ " + value])
             if count == 0:
                 raise Exception("Sorry! No spending records found!")
-            spend_total_str = "<pre>" + tabulate(table, headers='firstrow') + "</pre>"
+            spend_total_str = "<pre>" + tabulate(table, headers='firstrow', tablefmt="grid") + "</pre>"
             bot.send_message(chat_id, spend_total_str, parse_mode="HTML")
 
     except Exception as ex:
