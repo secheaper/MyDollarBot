@@ -24,6 +24,11 @@ from email.mime.base import MIMEBase
 from email import encoders
 from forex_python.converter import CurrencyRates
 
+# added by Jay for chatbot integration
+from hugchat import hugchat
+from hugchat.login import Login
+# added by Jay for chatbot integration
+
 # sys.path.append("/Users/jayesh/Documents/GitHub/slashbot/src")
 try:
     from user import User
@@ -45,7 +50,8 @@ commands = {
     "categoryDelete": "Delete a category",
     "download": "Download your history",
     "displayDifferentCurrency": "Display the sum of expenditures for the current day/month in another currency",
-    "sendEmail": "Send an email with an attachment showing your history"
+    "sendEmail": "Send an email with an attachment showing your history",
+    "summary": "Show summary of your expenditure"   # added by Jay for chatbot integration
 }
 
 c = CurrencyRates()
@@ -53,15 +59,73 @@ DOLLARS_TO_RUPEES = c.get_rate('USD', 'INR')
 DOLLARS_TO_EUROS = c.get_rate('USD', 'EUR')
 DOLLARS_TO_SWISS_FRANC = c.get_rate('USD', 'CHF')
 
+# added by Jay for chatbot integration
 bot = telebot.TeleBot(api_token)
 telebot.logger.setLevel(logging.INFO)
 user_list = {}
 option = {}
 all_transactions = []
 completeSpendings = 0
+# added by Jay for chatbot integration
 
 logger = logging.getLogger()
 
+# added by Jay for chatbot integration
+@bot.message_handler(commands=["summary"])
+def chatGPT_int(message):
+    # Log in to huggingface and grant authorization to huggingchat
+    sign = Login('airtelbharti9004@gmail.com', 'J@yesh17598')
+    cookies = sign.login()
+    # Save cookies to the local directory
+    cookie_path_dir = "./cookies_snapshot"
+    sign.saveCookiesToDir(cookie_path_dir)
+    # Create a chatbot connection
+    chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
+
+    # New a conversation (ignore error)
+    id = chatbot.new_conversation()
+    chatbot.change_conversation(id)
+
+    dateFormat = "%m/%d/%Y"
+
+    try:
+        chat_id = str(message.chat.id)
+        if len(user_list[chat_id].transactions) == 0:
+            raise Exception("Oops! Looks like you do not have any spending records!")
+        query = datetime.today()
+        query_result = ""
+        total_value = 0
+        budget_value = user_list[chat_id].monthly_budget
+        for category in user_list[chat_id].transactions.keys():
+            for transaction in user_list[chat_id].transactions[category]:
+                if transaction["Date"].strftime("%m") == query.strftime("%m"):
+                    query_result += "Category {} Date {} Value {:.2f} \n".format(
+                        category,
+                        transaction["Date"].strftime(dateFormat),
+                        transaction["Value"],
+                    )
+                    total_value += transaction["Value"]
+        total_spendings = (
+            "Total spendings for the Month {} \n".format(
+                datetime.today().strftime("%B")
+            )
+        )
+        total_spendings += query_result
+        total_spendings += "Total Value {:.2f}\n".format(total_value)
+        total_spendings += "Budget for the month {}".format(str(budget_value))
+        user_input = ('''Consider below monthly expense & budget and give me summary as well as tell me how can I manage my budget for the rest 
+        of month. Expenses are :''' + (total_spendings))
+        try:
+            response = str(chatbot.chat(user_input))
+            bot.send_message(chat_id, response)
+        except Exception as ex:
+            bot.send_message(chat_id, print(ex))
+
+    except Exception as ex:
+        print("Exception occurred : ")
+        logger.error(str(ex), exc_info=True)
+        bot.reply_to(message, str(ex))
+# added by Jay for chatbot integration
 
 @bot.message_handler(commands=["start", "menu"])
 def start_and_menu_command(m):
@@ -483,7 +547,7 @@ def acceptEmailId(message):
                 This email has an attached copy of your expenditure history.
                 Thank you!
                 '''
-                #The mail addresses and password
+                # The mail addresses and password
                 sender_address = 'bucksbotncsu@gmail.com'
                 sender_pass = 'eevyhyshokfrrvkc'
                 receiver_address = email
@@ -1407,19 +1471,19 @@ def display_total_currency2(message):
         markup.row_width = 2
 
         if selection == "INR":
-            completeExpenses = round(completeSpendings * DOLLARS_TO_RUPEES,2)
+            completeExpenses = round(completeSpendings * DOLLARS_TO_RUPEES, 2)
             completeExpensesMessage = (
                     "The total expenses in INR is Rs. " + str(completeExpenses)
             )
             bot.reply_to(message, completeExpensesMessage)
         if selection == "EUR":
-            completeExpenses = round(completeSpendings * DOLLARS_TO_EUROS,2)
+            completeExpenses = round(completeSpendings * DOLLARS_TO_EUROS, 2)
             completeExpensesMessage = (
                     "The total expenses in EUR is " + str(completeExpenses) + " EUR"
             )
             bot.reply_to(message, completeExpensesMessage)
         if selection == "CHF":
-            completeExpenses = round(completeSpendings * DOLLARS_TO_SWISS_FRANC,2)
+            completeExpenses = round(completeSpendings * DOLLARS_TO_SWISS_FRANC, 2)
             completeExpensesMessage = (
                     "The total expenses in Swiss Franc is " + str(completeExpenses) + " CHF"
             )
