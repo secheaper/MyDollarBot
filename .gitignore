@@ -20,6 +20,7 @@ parts/
 sdist/
 var/
 wheels/
+slashbot_env/
 pip-wheel-metadata/
 share/python-wheels/
 *.egg-info/

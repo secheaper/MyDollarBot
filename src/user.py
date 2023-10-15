@@ -389,7 +389,46 @@ class User:
         # Add more visualizations here. Maintain the above format while adding more visualizations. 
 
         return charts
+    
+    def create_chart_for_monthly_analysis(self,userid):
+        total=[]
+        result=[]
+        for category,transaction_list in self.transactions.items():
+            for data in transaction_list:
+                clone=data.copy()
+                clone['Category']=category
+                total.append(clone)
 
+        df=pd.DataFrame.from_dict(total)
+        df1=df.groupby([df['Date'].dt.year.rename('year'), 
+                   df['Date'].dt.month_name().rename('month')])['Value'].sum().reset_index()
+        df1['month-year']=df1["year"].astype(str) +'_'+ df1["month"].astype(str).str[:3] 
+        fig=plt.figure()
+        plt.bar(df1["month-year"],df1['Value'])
+        plt.ylabel("Expenses")
+        fig_name1="data/{}_monthly_analysis.png".format(userid) 
+        plt.savefig(fig_name1,bbox_inches="tight")
+        result.append(fig_name1)
+
+
+        df2=df.groupby([df['Date'].dt.year.rename('year'), 
+                   df['Date'].dt.month_name().rename('month'),df['Category']])['Value'].sum().reset_index()
+        df2['month-year']=df2["year"].astype(str) +'_'+ df2["month"] 
+        df_pivot = pd.pivot_table(
+                df2,
+                values="Value",
+                index="month-year",
+                columns="Category"
+            )
+        chart=df_pivot.plot(kind='bar')
+        chart.set_ylabel("Expenses")
+        fig = chart.get_figure()
+        fig_name2="data/{}_monthly_analysis_by_category.png".format(userid)    
+        fig.savefig(fig_name2,bbox_inches="tight")
+        result.append(fig_name2)
+        
+        return result        
+    
     def add_category(self, new_category, userid):
         """
         Stores the category to category list.
