@@ -20,6 +20,7 @@ setup(
     install_requires=[
         'pyTelegramBotAPI==4.1.0',
         'pandas==1.3.4',
-        'matplotlib==3.4.3'
+        'matplotlib==3.4.3',
+        'discord.py==2.3.2'
     ]
 )

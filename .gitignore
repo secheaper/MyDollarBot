@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 temp.txt
+
+# pickle files
+.pickle

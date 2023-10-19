@@ -1,101 +1,94 @@
-# Contributing to SlashBot
+# Contributing to FinBot
 
-Follow the set of guidelines below to contribute to SlashBot!
+Thank you for your interest in contributing to our project. Please make sure to read and follow these guidelines for a smooth and effective contribution process.
 
 ## Code of Conduct
 
-By participating, you are expected to uphold this code. Please report unacceptable behavior to psomash@ncsu.edu or secheaper@gamil.com.
+Everyone participating in this project needs to abide by the aPAS - A Personal Agile Scheduler Code of Conduct that can be found under the main repository link as a [CODE_OF_CONDUCT.md](https://github.com/vyshnavi-adusumelli/FinBot/blob/main/CODE_OF_CONDUCT.md) file. By participating, you are expected to uphold this code. Please report unacceptable behavior to any of the original team members listed at the bottom of [README.md](https://github.com/vyshnavi-adusumelli/FinBot/blob/main/README.md).
 
-Prerequistes required before starting this project
-
-1. Must be a graduate student at NC State University
-2. Must be a student in Software Engineering Course in Fall 2021
-3. Have proficiency in Python
-
-## How can I Contribute -
+## How can You Contribute
  
 ### Reporting Bugs
 
-This section guides you through submitting a bug report for SlashBot.
-Following these guidelines helps maintainers and the community understand your report, reproduce the behavior and find related reports.
+This section guides you through submitting a bug report for FinBot. Following these guidelines helps maintainers and the community understand your report, reproduce the behavior and find related reports.
 
-Before Submitting A Bug Report
+### Before Submitting A Bug Report
 
-Check the debugging guide
+- Check the debugging guide.
 
-Check the FAQs on the forum for a list of common questions and problems.
-Determine which repository the problem should be reported in.
+- Review the FAQs on the forum for common questions and problems.
 
-Perform a cursory search to see if the problem has already been reported.
+- Perform a cursory search to see if the problem has already been reported.
 
-## How Do I Submit A (Good) Bug Report?
+- When you are creating a bug report, please ensure that you include as many details as possible to understand the issue.
 
-Use a clear and descriptive title for the issue to identify the problem.
+### How Do I Submit A (Good) Bug Report?
 
-Describe the exact steps which reproduce the problem in as many details as possible.
+- Use a clear and descriptive title for the issue to identify the problem.
 
-Provide specific examples to demonstrate the steps.
+- Describe the exact steps which reproduce the problem in as many details as possible.
 
-Describe the behavior you observed after following the steps and point out what exactly is the problem with that behavior.
+- Provide specific examples to demonstrate the steps. Include links to files or GitHub projects, or copy/pasteable snippets, which you use in those examples. If you're providing snippets in the issue, use Markdown code blocks.
 
-Explain which behavior you expected to see instead and why.
+- If the problem is related to performance or memory, then ensure that you include a CPU profile capture with your report.
 
-Include screenshots and animated GIFs which show you following the described steps and clearly demonstrate the problem.
+- Include screenshots and animated GIFs which show you following the described steps and clearly demonstrate the problem.
 
-If the problem is related to performance or memory, include a CPU profile capture with your report.
+- If the problem wasn't triggered by a specific action, describe what you were doing before the problem happened and share more information using the guidelines below.
 
-## Pull Requests
+### Suggesting Enhancements
 
-The process described here has several goals:
+This section guides you through submitting a suggestion for FinBot, including completely new features and minor improvements to existing functionality.
 
-Maintain the projects quality
+Enhancement suggestions are tracked as GitHub issues. After you've determine your enhancement suggestion, create an issue on that repository and provide with information like title, step-by-step description, specific examples. Giving more detailed information will help us understand the suggestion better.
 
-Fix problems that are important to users
+Provide details like
+- What is the enhancement?
+- Suggestions to implement the enhancement
 
-Enable a sustainable system for the projects maintainers to review contributions
+We welcome suggestions to improve the bot; please add them to the TO-DO list.
 
-## Tips to Extend
+### Pull Requests
 
-Check the Projects tab for TO-DO list and pick the feature you find interesting to work on.
+Contributing through pull requests is essential for maintaining project quality. Here's how you can create a pull request:
 
-Create a branch and implement the feature in Python using Telegram bot and test it locally.
+- Check the Projects tab for the TO-DO list and pick/create a feature to work on.
 
-Write corresponding test cases to ensure it is not breaking the existing system.
+- Create a branch and implement the feature in Python, and test it locally.
 
-Create pull request and request for the code review. Once the request is approved, merge to main.
+- Write corresponding test cases to ensure it doesn't break the existing system.
+  
+- Create a pull request and request a code review. Once approved, merge it into the main branch.
 
-Any suggestions to improve the bot is appreciated. Please add it to the TO-DO list.
+Key features to pay attention to
 
-## More tips for developers
-### Heroku deployment
-The bot is deployed on [Heroku](https://www.heroku.com/), a website used to host source code and apps.
+- Maintain the projects quality
 
-Quoted directly from their page:
+- Fix problems that are important to users
+  
+- Enable a sustainable system for the projects maintainers to review contributions
+  
+- Add a description of the modification. Add images for the modification if possible.
+  
+- Insert a clear and descriptive title.
 
-"Heroku is a platform as a service (PaaS) that enables developers to build, run, and operate applications entirely in the cloud."
+## Style Guides
 
+### Git Commit Messages
 
-#### Why this is useful
+- Describe why any particular modification is being made.
 
-Before, users had to download source code, insert their API key from telegram, and then run the python file. 
-This can lead to both user error and error within the source code. By deploying it on heroku, you ensure that
-the code is available anywhere, at anytime, without having to download files.
+- Give a detailed description about the limitations of current code.
 
+- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
 
-#### How we created the bot
+- Limit the first line to 72 characters or less
 
-1. A heroku account was created with the shared mydollarbot@gmail.com credentials
-2. A new app was created called my_dollar_bot. 
-3. Within github, we added a [new action](.github/workflows/deploy.yml) to deploy to the heroku bot
-4. For every push, the source code is deployed to heroku, and python code/bot.py is executed, starting the bot
+- Link an issue to the change
 
-This way, if users want to use the bot without developing, they can simply use this bot instead of having to run the
-application locally.
+### Python Style Guides
 
-#### How to develop the heroku bot server
+All Python code is linted with Pylint. Ensure that before you commit any changes, your code passes all the default pylint checks and pipeline checks. Pylint can be installed with pip install pylint.
 
-- Follow steps 1-3 above, except replace with your own email. Install Heroku cli [here](https://devcenter.heroku.com/articles/heroku-cli#download-and-install).
-- Within github, add a secret for the heroku api key.
-- Create a new CI/CD pipeline (refer our yaml file [here](.github/workflows/deploy.yml)) and set up github actions.
-- Create a new Procfile and add `worker: python code/bot.py`. Refer ours [here](https://github.com/mtkumar123/MyDollarBot/blob/main/Procfile)
-- Within your heroku dashboard, you can view logs for the bot to understand well the deployment is running. You can also run the command `heroku logs` or `heroku logs -t`
+## Need Additional Help?
+Due to any reason, if you feel like you have reservations related to the process, feel free to reach us out at [vadusum@ncsu.edu] Github process can be a bit complex and we don't want to lose your valuable contributions because of that reason. We are extremely glad that you have visited us and will make our project much better.

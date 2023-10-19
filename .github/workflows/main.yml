@@ -6,9 +6,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ pratik_testing ]
+    branches: [ main ]
   pull_request:
-    branches: [ pratik_testing ]
+    branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -53,13 +53,19 @@ jobs:
       - name: Install pylint
         run: |
           pip install pylint
+      - name: Run pylint
+        run: |
+          pylint -r y src/
       - name: Run tests
         env:
           API_TOKEN: ${{ secrets.API_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          CHANNEL_ID: ${{secrets.CHANNEL_ID }}
         run: |
           export PYTHONPATH=src
           python -m pytest -v --cov=src/ --cov-report=xml
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3  
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
