@@ -27,6 +27,7 @@ class User:
         self.edit_transactions = {}
         self.edit_category = {}
         self.monthly_budget = 0
+        self.monthly_savings = 0
         self.rules = {}
 
         # for the calendar widget
@@ -278,6 +279,22 @@ class User:
         try:
             if amount != 0:
                 self.monthly_budget = amount
+                self.save_user(userid)
+
+        except Exception as e:
+            logger.error(str(e), exc_info=True)
+
+    def add_monthly_savings(self, amount, userid):
+        """
+        Given amount and userid, edit the budget of the current user
+
+        :param amount: budget amount
+        :param userid:
+        :return: None
+        """
+        try:
+            if amount != 0:
+                self.monthly_savings = amount
                 self.save_user(userid)
 
         except Exception as e:

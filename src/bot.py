@@ -20,14 +20,17 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
+import smtplib, ssl
 
-sys.path.append("C:/NCSU/Sem 1/SE/Project 3/slashbot/")
-try:
-    from src.user import User
-except:
-   from user import User
+sys.path.append("C:\Work\spendwise")
+# try:
+#     from src.user import User
+# except:
+   
+from user import User
 
-api_token = os.environ["API_TOKEN"]
+#api_token = os.environ["API_TOKEN"]
+api_token = "6192644492:AAG2YtZ5AsmOyj5ashOI_Fk3q-Fvmu5feb4"
 commands = {
     "menu": "Display this menu",
     "add": "Record/Add a new spending",
@@ -42,7 +45,8 @@ commands = {
     "categoryDelete": "Delete a category",
     "download":"Download your history",
     "displayDifferentCurrency": "Display the sum of expenditures for the current day/month in another currency",
-    "sendEmail":"Send an email with an attachment showing your history"
+    "sendEmail":"Send an email with an attachment showing your history",
+    "addSavingsGoal": "Record your target spending",
 }
 
 DOLLARS_TO_RUPEES = 75.01
@@ -288,8 +292,8 @@ def post_amount_input(message, date_of_entry):
             date_of_entry, option[chat_id], amount_value, chat_id
         )
         total_value = user_list[chat_id].monthly_total()
-        add_message = "The following expenditure has been recorded: You have spent ${} for {} on {}".format(
-            amount_str, category_str, date_str
+        add_message = "The following expenditure has been recorded: You have spent ${} for {} on {} on {} {} {}".format(
+            amount_str, category_str, date_str, total_value, user_list[chat_id].monthly_budget,user_list[chat_id].monthly_savings, 
         )
 
         if user_list[chat_id].monthly_budget > 0:
@@ -305,17 +309,39 @@ def post_amount_input(message, date_of_entry):
                     text="*You have exhausted your monthly budget. You can check/download history*",
                     parse_mode="Markdown",
                 )
-            elif total_value >= 0.8 * user_list[chat_id].monthly_budget:
+               
+            elif total_value > user_list[chat_id].monthly_budget-user_list[chat_id].monthly_savings:
                 bot.send_message(
                     chat_id,
-                    text="*You have used 80% of the monthly budget.*",
+                    text="*You have used your savings too!.*",
                     parse_mode="Markdown",
                 )
+                sendMail()
+
+
         bot.send_message(chat_id, add_message)
     except Exception as ex:
         print("Exception occurred : ")
         logger.error(str(ex), exc_info=True)
         bot.reply_to(message, "Processing Failed - \nError : " + str(ex))
+
+def sendMail():
+    port = 587  # For starttls
+    smtp_server = "smtp.gmail.com"
+    sender_email = "spendwisebot@gmail.com"
+    receiver_email = "nitin.dhanabalan@gmail.com"
+    password = "jcxpkqdodrysphhy"
+    message = """\
+    Hello, You have exhausted your saving.
+    """
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP(smtp_server, port) as server:
+        server.ehlo()  # Can be omitted
+        server.starttls(context=context)
+        server.ehlo()  # Can be omitted
+        server.login(sender_email, password)
+        server.sendmail(sender_email, receiver_email, message)
 
 
 @bot.message_handler(commands=["history"])
@@ -351,6 +377,52 @@ def show_history(message):
     except Exception as ex:
         logger.error(str(ex), exc_info=True)
         bot.reply_to(message, str(ex))
+
+@bot.message_handler(commands=["addSavingsGoal"])
+def command_budget(message):
+    chat_id = str(message.chat.id)
+    option.pop(chat_id, None)
+    if chat_id not in user_list.keys():
+        user_list[chat_id] = User(chat_id)
+    bot.send_message(
+        chat_id,
+        "Your current monthly savings is {}".format(user_list[chat_id].monthly_savings),
+    )
+    message = bot.send_message(
+        chat_id,
+        "Enter an amount to update your monthly savings. \n(Enter numeric values only)",
+    )
+    bot.register_next_step_handler(message, post_budget_input)
+
+
+def post_budget_input(message):
+    """
+    Receives the amount entered by the user and then adds it to the monthly_budget attribute of the user object. An
+    error is displayed if the entered amount is zero. Else, a message is shown that the budget has been added. :param
+    message: telebot.types.Message object representing the message object.
+
+    :param message: telebot.types.Message object representing the message object
+    :type: object
+    :return: None
+    """
+    try:
+        chat_id = str(message.chat.id)
+        amount_entered = message.text
+        amount_value = user_list[chat_id].validate_entered_amount(
+            amount_entered
+        )  # validate
+        if amount_value == 0:  # cannot be $0 spending
+            raise Exception("Savings amount has to be a positive number.")
+        user_list[chat_id].add_monthly_savings(amount_value, chat_id)
+        bot.send_message(
+            chat_id,
+            "The savings for this month has been set as ${}".format(
+                format(amount_value, ".2f")
+            ),
+        )
+
+    except Exception as ex:
+        bot.reply_to(message, "Oh no. " + str(ex))
 
 
 @bot.message_handler(commands=["download"])
@@ -479,8 +551,8 @@ def acceptEmailId(message):
                 Thank you!
                 '''
                 #The mail addresses and password
-                sender_address = 'secheaper@gmail.com'
-                sender_pass = 'csc510se'
+                sender_address = 'spendwisebot@gmail.com'
+                sender_pass = 'jcxpkqdodrysphhy'
                 receiver_address = email
                 #Setup the MIME
                 message = MIMEMultipart()
