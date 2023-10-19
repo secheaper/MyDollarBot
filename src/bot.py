@@ -2,6 +2,7 @@
 File contains bot message handlers and their associated functions
 """
 import logging
+import requests, json 
 import os
 from calendar import monthrange
 import pathlib
@@ -49,9 +50,7 @@ commands = {
     "addSavingsGoal": "Record your target spending",
 }
 
-DOLLARS_TO_RUPEES = 75.01
-DOLLARS_TO_EUROS = 0.88
-DOLLARS_TO_SWISS_FRANC = 0.92
+
 
 bot = telebot.TeleBot(api_token)
 telebot.logger.setLevel(logging.INFO)
@@ -86,6 +85,39 @@ def start_and_menu_command(m):
         text_intro += "/" + c + ": "
         text_intro += commands[c] + "\n\n"
     bot.send_message(chat_id, text_intro)
+
+def RealTimeCurrencyExchangeRate(from_currency, to_currency, api_key) : 
+  
+    # importing required libraries 
+    
+  
+    # base_url variable store base url  
+    base_url = r"https://www.alphavantage.co/query?function = CURRENCY_EXCHANGE_RATE"
+  
+    # main_url variable store complete url 
+    main_url = base_url + "&from_currency =" + from_currency + "&to_currency =" + to_currency + "&apikey =" + api_key 
+  
+    # get method of requests module  
+    # return response object  
+    req_ob = requests.get(main_url) 
+  
+    # json method return json format 
+    # data into python dictionary data type. 
+      
+    # result contains list of nested dictionaries 
+    result = req_ob.json() 
+  
+    print(" Result :\n", result) 
+    return result
+
+# DOLLARS_TO_RUPEES = RealTimeCurrencyExchangeRate("USD", "INR", "WYQ1VNZQKS1XU2FR.")
+# DOLLARS_TO_EUROS = RealTimeCurrencyExchangeRate("USD", "EUR", "WYQ1VNZQKS1XU2FR.")
+# DOLLARS_TO_SWISS_FRANC = RealTimeCurrencyExchangeRate("USD", "EUR", "WYQ1VNZQKS1XU2FR.")
+
+DOLLARS_TO_RUPEES = 83.21
+DOLLARS_TO_EUROS = 0.94
+DOLLARS_TO_SWISS_FRANC = 0.89
+  
 
 
 @bot.message_handler(commands=["budget"])
